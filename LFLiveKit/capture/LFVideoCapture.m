@@ -49,7 +49,7 @@
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterBackground:) name:UIApplicationWillResignActiveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
         
         self.beautyFace = YES;
         self.beautyLevel = 0.5;
@@ -362,23 +362,13 @@
 }
 
 - (void)statusBarChanged:(NSNotification *)notification {
-    NSLog(@"UIApplicationWillChangeStatusBarOrientationNotification. UserInfo: %@", notification.userInfo);
+    NSLog(@"UIApplicationDidChangeStatusBarOrientationNotification. UserInfo: %@", notification.userInfo);
     UIInterfaceOrientation statusBar = [[UIApplication sharedApplication] statusBarOrientation];
-
     if(self.configuration.autorotate){
-        if (self.configuration.landscape) {
-            if (statusBar == UIInterfaceOrientationLandscapeLeft) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeRight;
-            } else if (statusBar == UIInterfaceOrientationLandscapeRight) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeLeft;
-            }
-        } else {
-            if (statusBar == UIInterfaceOrientationPortrait) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortraitUpsideDown;
-            } else if (statusBar == UIInterfaceOrientationPortraitUpsideDown) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
-            }
-        }
+        self.configuration.outputImageOrientation = statusBar;
+        [self.configuration refreshVideoSize];
+        self.videoCamera.outputImageOrientation = statusBar;
+        [self reloadFilter];
     }
 }
 
